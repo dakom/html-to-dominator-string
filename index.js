@@ -1,7 +1,7 @@
 module.exports = function htmlToDominatorString(html) {
-    return addNodes(htmlToElement(html), 1, "");
+    return addNodes(htmlToElement(html), 1, "", false);
 
-    function addNodes(element, nodeDepth, str) {
+    function addNodes(element, nodeDepth, str, withComma) {
         const {tagName, children, attributes} = element;
 
         const writeLine = (lineDepth, text) => {
@@ -22,18 +22,32 @@ module.exports = function htmlToDominatorString(html) {
             }
         }
 
+        if(!children.length) {
+            //textContent includes all the descendent's text too
+            //not sure how to get just this node's
+            //in the meantime, assume only leafs are valid text nodes
+            const text = element.textContent == null ? "" : element.textContent.trim();
+            if(text != "") {
+                writeLine(nodeDepth + 1, `.text("${text}")`);
+            }
+        }
+
         if(children.length) {
 
             writeLine(nodeDepth + 1, `.children(&mut [`);
 
             for(let i = 0; i < children.length; i++) {
-                str = addNodes(children[i], nodeDepth + 2, str);
+                str = addNodes(children[i], nodeDepth + 2, str, true);
             }
 
             writeLine(nodeDepth + 1, `])`);
         }
 
-        writeLine(nodeDepth, `})`);
+        if(withComma) {
+            writeLine(nodeDepth, `}),`);
+        } else {
+            writeLine(nodeDepth, `})`);
+        }
 
         return str;
     }
