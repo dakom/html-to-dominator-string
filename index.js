@@ -14,9 +14,13 @@ module.exports = function htmlToDominatorString(html) {
             const {name, value} = attributes[i];
             if(name.toLowerCase() === "class") {
                 const classNames = value.split(" ");
-                classNames.forEach(className => {
-                    writeLine(nodeDepth + 1, `.class("${className}")`);
-                });
+                if(classNames.length) {
+                    const classString = classNames.map(x => `"${x}"`).join(",");
+
+                    classNames.forEach(className => {
+                        writeLine(nodeDepth + 1, `.class(${classString})`);
+                    });
+                }
             } else {
                 writeLine(nodeDepth + 1, `.attribute("${name}", "${value}")`);
             }
@@ -26,6 +30,7 @@ module.exports = function htmlToDominatorString(html) {
             //textContent includes all the descendent's text too
             //not sure how to get just this node's
             //in the meantime, assume only leafs are valid text nodes
+            //this is also a Dominator requirement atm it seems...
             const text = element.textContent == null ? "" : element.textContent.trim();
             if(text != "") {
                 writeLine(nodeDepth + 1, `.text("${text}")`);
