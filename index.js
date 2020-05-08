@@ -15,8 +15,12 @@ module.exports = function htmlToDominatorString(html) {
             if(name.toLowerCase() === "class") {
                 const classNames = value.split(" ");
                 if(classNames.length) {
-                    const classString = classNames.map(x => `"${x}"`).join(",");
-                    writeLine(nodeDepth + 1, `.class(${classString})`);
+                    if(classNames.length === 1) {
+                        writeLine(nodeDepth + 1, `.class("${classNames[0]}")`);
+                    } else {
+                        const classString = classNames.map(x => `"${x}"`).join(",");
+                        writeLine(nodeDepth + 1, `.class([${classString}])`);
+                    }
                 }
             } else {
                 writeLine(nodeDepth + 1, `.attribute("${name}", "${value}")`);
