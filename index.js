@@ -16,10 +16,7 @@ module.exports = function htmlToDominatorString(html) {
                 const classNames = value.split(" ");
                 if(classNames.length) {
                     const classString = classNames.map(x => `"${x}"`).join(",");
-
-                    classNames.forEach(className => {
-                        writeLine(nodeDepth + 1, `.class(${classString})`);
-                    });
+                    writeLine(nodeDepth + 1, `.class(${classString})`);
                 }
             } else {
                 writeLine(nodeDepth + 1, `.attribute("${name}", "${value}")`);
