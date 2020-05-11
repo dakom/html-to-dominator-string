@@ -1,5 +1,6 @@
 module.exports = function htmlToDominatorString(html) {
-    return addNodes(htmlToElement(html), 1, "", false);
+
+    return addNodes(htmlToElement(html), 0, "", false);
 
     function addNodes(element, nodeDepth, str, withComma) {
         const {tagName, children, attributes} = element;

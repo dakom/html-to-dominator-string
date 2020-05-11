@@ -1,8 +1,9 @@
 {
     "name": "html-to-dominator-string",
     "description": "Converts html to a dominator string",
-    "version": "1.10.0",
+    "version": "1.11.0",
     "main": "index.js",
+    "files": ["index.js"],
     "license": "MIT",
     "repository": "github:dakom/html-to-dominator-string"
 }
