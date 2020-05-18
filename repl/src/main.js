@@ -4,6 +4,18 @@ import Prism from 'prismjs';
 import htmlToDominatorString from "../../index";
 import {svgDefault, htmlDefault, fullDefault} from "./default";
 
+const whitespaceToggle = document.querySelector("#whitespace-toggle");
+
+let options = {
+	trim: whitespaceToggle.checked 
+}
+
+whitespaceToggle.addEventListener("change", evt => {
+	options.trim = evt.target.checked;
+
+	render();
+});
+
 const inputEditor = document.querySelector('#input');
 const inputJar = new CodeJar(
 	inputEditor, 
@@ -33,6 +45,6 @@ render();
 
 function render() {
 	const html = inputJar.toString();
-	const dominator_string = htmlToDominatorString(html);
+	const dominator_string = htmlToDominatorString(html, options);
 	outputJar.updateCode(dominator_string);
 }
