@@ -2,6 +2,7 @@ import {CodeJar} from 'codejar';
 import {withLineNumbers} from 'codejar/linenumbers';
 import Prism from 'prismjs';
 import htmlToDominatorString from "../../index";
+import {svgDefault, htmlDefault, fullDefault} from "./default";
 
 const inputEditor = document.querySelector('#input');
 const inputJar = new CodeJar(
@@ -12,22 +13,7 @@ const inputJar = new CodeJar(
 
 inputEditor.style.resize = "none"
 
-inputJar.updateCode(
-
-`<header class="fancy">
-  <div class="flex mb-4">
-    <div class="cell">
-        One of three columns
-    </div>
-    <div class="cell bg-indigo-100">
-        <div class="green text-4xl">Two of three columns</div>
-    </div>
-    <div class="cell">
-        Profile
-    </div>
-  </div>
-</header>`
-);
+inputJar.updateCode(fullDefault);
 
 inputJar.onUpdate(code => {
 	//just in case jar's toString is updated after this

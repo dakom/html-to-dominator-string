@@ -1,15 +1,29 @@
 module.exports = function htmlToDominatorString(html) {
 
-    return addNodes(htmlToElement(html), 0, "", false);
+    return addNodes(
+        htmlToElement(html), 
+        {
+            nodeDepth: 0,
+            str: "",
+            withComma: false,
+            parentTag: "html"
+        }
+    );
 
-    function addNodes(element, nodeDepth, str, withComma) {
+    function addNodes(element, state) {
         const {tagName, children, attributes} = element;
+        let {nodeDepth, str, withComma} = state;
+
+        const parentTag = element.tagName === "html" || element.tagName === "svg"
+            ? element.tagName
+            : state.parentTag;
+
 
         const writeLine = (lineDepth, text) => {
             str += makeIndent(lineDepth) + text + '\n';
         }
 
-        writeLine(nodeDepth, `html!("${tagName.toLowerCase()}", {`);
+        writeLine(nodeDepth, `${parentTag}!("${tagName.toLowerCase()}", {`);
 
         for(let i = 0; i < attributes.length; i++) {
             const {name, value} = attributes[i];
@@ -44,7 +58,14 @@ module.exports = function htmlToDominatorString(html) {
             writeLine(nodeDepth + 1, `.children(&mut [`);
 
             for(let i = 0; i < children.length; i++) {
-                str = addNodes(children[i], nodeDepth + 2, str, true);
+                str = addNodes(
+                    children[i], 
+                    {
+                        nodeDepth: nodeDepth + 2, 
+                        str, 
+                        withComma: true,
+                        parentTag
+                    });
             }
 
             writeLine(nodeDepth + 1, `])`);
