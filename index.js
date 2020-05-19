@@ -1,11 +1,27 @@
-module.exports = function htmlToDominatorString(html, options) {
+module.exports = function htmlToDominatorString(html) {
 
-    options = options == null 
-        ? {trim: false} 
-        : options;
+    //white space collapsing is complicated. See: https://www.w3.org/TR/css-text-3/#white-space-processing
+    //therefore we wrap it in a custom element, then process it via its innerText
+    //the custom element behaves like a classless <span>
+    //while also protecting us from global <span> CSS, just in case
 
-    return addNodes(
-        htmlToElement(html), 
+    if(!customElements.get('html-to-dominator-string')) {
+        class CustomTextElement extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({mode: 'closed'});
+
+            }
+        }
+
+        customElements.define('html-to-dominator-string', CustomTextElement, {extends: "span"});
+    }
+
+
+    const [element, container] = htmlToElement(html);
+
+    const str = addNodes(
+        element, 
         {
             nodeDepth: 0,
             str: "",
@@ -14,10 +30,16 @@ module.exports = function htmlToDominatorString(html, options) {
         }
     );
 
-    function addNodes(element, state) {
+    container.remove();
 
-        const {tagName, attributes, nodeType} = element;
+    return str;
+
+    function addNodes(element, state) {
         let {nodeDepth, str, withComma} = state;
+        if(element == null) {
+            return str;
+        }
+        const {tagName, attributes, nodeType} = element;
 
         // childNodes includes all child nodes—including non-element nodes like text and comment nodes. 
         // To get a collection of only elements, use ParentNode.children instead.
@@ -36,15 +58,23 @@ module.exports = function htmlToDominatorString(html, options) {
 
         // node types: https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
         if(nodeType == 3) {
-            const trimmedText = element.textContent == null ? "" : element.textContent.trim();
 
-            if(trimmedText != "") {
-                const text = options.trim ? trimmedText : element.textContent;
-                writeLine(nodeDepth, `text("${text}"),`);
+            //See note above, about white space collapsing
+            const textContent = element.textContent;
+
+            if(textContent.trim() !== "") {
+
+                //create the custom element
+                const textElement = document.createElement("html-to-dominator-string");
+                //append the text content as a new child text node
+                textElement.appendChild(document.createTextNode(textContent));
+                //swap the current (text node) element with the custom element
+                element.replaceWith(textElement);
+                //get the innerText (since the custom element extends span, it'll be formatted properly)
+                const innerText = textElement.innerText;
+                //write it out
+                writeLine(nodeDepth, `text("${innerText}"),`);
             }
-            /*
-
-            */
 
             if(children && children.length) {
                 throw new Error("text nodes with children? very confusing!!");
@@ -111,12 +141,23 @@ module.exports = function htmlToDominatorString(html, options) {
         return indent;
     }
     
-    //https://stackoverflow.com/a/35385518/784519
     function htmlToElement(html) {
-        var template = document.createElement('template');
-        html = html.trim(); // Never return a text node of whitespace as the result
-        template.innerHTML = html;
-        return template.content.firstChild;
+        const hiddenContainer = document.createElement("div");
+        const offScreenContainer = document.createElement("div");
+
+        hiddenContainer.style.position = "relative";
+        hiddenContainer.style.overflow = "hidden";
+
+        offScreenContainer.innerHTML = html.trim();
+        offScreenContainer.normalize();
+        offScreenContainer.style.position = "absolute";
+        offScreenContainer.style.left = "calc(100vw + 1em)";
+        offScreenContainer.style.top= "0";
+        
+        hiddenContainer.appendChild(offScreenContainer);
+        document.body.appendChild(hiddenContainer);
+
+        return [offScreenContainer.firstChild, hiddenContainer];
     }
 }
 
