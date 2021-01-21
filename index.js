@@ -1,4 +1,10 @@
-module.exports = function htmlToDominatorString(html) {
+module.exports = function htmlToDominatorString(html, opts) {
+
+    opts = opts || {};
+
+    const {attributeIsProperty} = opts;
+
+    const attributeMethod = attributeIsProperty ? "property" : "attribute";
 
     //white space collapsing is complicated. See: https://www.w3.org/TR/css-text-3/#white-space-processing
     //therefore we wrap it in a custom element, then process it via its innerText
@@ -97,7 +103,7 @@ module.exports = function htmlToDominatorString(html) {
                         }
                     }
                 } else {
-                    writeLine(nodeDepth + 1, `.attribute("${name}", "${value}")`);
+                    writeLine(nodeDepth + 1, `.${attributeMethod}("${name}", "${value}")`);
                 }
             }
 

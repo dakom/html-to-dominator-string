@@ -69,3 +69,12 @@ main {
     left: 10px;
     color: white;
 }
+
+.options {
+    padding: 10px;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+.options > * {
+    cursor: pointer;
+}
