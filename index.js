@@ -79,7 +79,7 @@ module.exports = function htmlToDominatorString(html, opts) {
                 //get the innerText (since the custom element extends span, it'll be formatted properly)
                 const innerText = textElement.innerText;
                 //write it out
-                writeLine(nodeDepth, `text("${innerText}"),`);
+                writeLine(nodeDepth, `.text("${innerText}"),`);
             }
 
             if(children && children.length) {
