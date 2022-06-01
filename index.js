@@ -57,7 +57,10 @@ module.exports = function htmlToDominatorString(html, opts) {
 
 
         const writeLine = (lineDepth, text) => {
-            str += makeIndent(lineDepth) + text + '\n';
+            writePart(lineDepth, text + '\n'); 
+        }
+        const writePart = (lineDepth, text) => {
+            str += makeIndent(lineDepth) + text;
         }
 
         const writeTextNode = (nodeDepth, element) => {
@@ -77,15 +80,16 @@ module.exports = function htmlToDominatorString(html, opts) {
                 //write it out
                 writeLine(nodeDepth, `.text("${innerText}")`);
             }
+
+            if(element.childNodes && element.childNodes.length) {
+                throw new Error("text nodes with children? very confusing!!");
+            }
         }
 
         // node types: https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
         if(nodeType == 3) {
+            // this won't really happen here, unless top-level element is text
             writeTextNode(nodeDepth, element);
-            if(children && children.length) {
-                throw new Error("text nodes with children? very confusing!!");
-            }
-
         } else if(nodeType == 1) {
 
 
@@ -143,17 +147,16 @@ module.exports = function htmlToDominatorString(html, opts) {
                 if(realChildren.length === 1) {
                     writeLine(nodeDepth + 1, `.child(`);
 
-                    for(let i = 0; i < realChildren.length; i++) {
-                        str = addNodes(
-                            realChildren[i], 
-                            {
-                                nodeDepth: nodeDepth + 2, 
-                                str, 
-                                parentTag,
-                            });
-                    }
-
+                    str = addNodes(
+                        realChildren[0], 
+                        {
+                            nodeDepth: nodeDepth + 2, 
+                            str, 
+                            parentTag,
+                        }
+                    );
                     writeLine(nodeDepth + 1, `)`);
+
                 } else {
                     writeLine(nodeDepth + 1, `.children([`);
 
