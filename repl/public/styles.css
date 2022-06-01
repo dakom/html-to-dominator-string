@@ -73,6 +73,7 @@ main {
 .options {
     padding: 10px;
     font-family: Verdana, Arial, Helvetica, sans-serif;
+    display: flex;
 }
 
 .options > * {

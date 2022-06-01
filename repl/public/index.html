@@ -11,7 +11,12 @@
     </head>
     <body>
         <div class="options">
-            <label><input id="opt-attr-is-prop" type="checkbox" checked> Attribute is Property </label>
+            <input type="radio" id="regular" name="attr_kind" value="reg">
+            <label for="regular">Regular</label><br>
+            <input type="radio" id="prop" name="attr_kind" value="prop">
+            <label for="prop">As Property</label><br>
+            <input type="radio" id="macro" name="attr_kind" value="macro">
+            <label for="macro">Macro</label><br>
         </div>
         <main>
             <section class="panels">

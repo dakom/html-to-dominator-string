@@ -4,12 +4,29 @@ import Prism from 'prismjs';
 import htmlToDominatorString from "../../index";
 import {svgDefault, htmlDefault, fullDefault, textNodeDefault} from "./default";
 
-const DEBUG = false;
+const DEBUG = true;
 
-const opts = {attributeIsProperty: true};
+const opts = {attrKind: "reg"};
 
-const inputOptionAttrIsProp = document.querySelector('#opt-attr-is-prop');
-inputOptionAttrIsProp.onchange = render;
+function setAttrKind(kind) {
+    document.querySelector(`input[type='radio'][name=attr_kind][value=${kind}]`).checked = true;
+}
+
+function getAttrKind() {
+    return document.querySelector("input[type='radio'][name=attr_kind]:checked").value;
+}
+
+function onAttrKindChange(f) {
+    document.querySelectorAll("input[type='radio'][name=attr_kind]").forEach(input => {
+        input.onchange = () => f(getAttrKind());
+    });
+}
+
+setAttrKind(opts.attrKind);
+onAttrKindChange(kind => {
+    console.log(kind);
+    render();
+});
 
 const inputEditor = document.querySelector('#input');
 const inputJar = new CodeJar(
@@ -40,8 +57,8 @@ render();
 
 function render() {
 	const html = inputJar.toString();
-	const opts = {
-		attributeIsProperty: inputOptionAttrIsProp.checked 
+        const opts = {
+            attrKind: getAttrKind()
 	};
 
 	const dominator_string = htmlToDominatorString(html, opts);

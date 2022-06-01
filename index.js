@@ -2,9 +2,7 @@ module.exports = function htmlToDominatorString(html, opts) {
 
     opts = opts || {};
 
-    const {attributeIsProperty} = opts;
-
-    const attributeMethod = attributeIsProperty ? "property" : "attribute";
+    const {attrKind} = opts;
 
     //white space collapsing is complicated. See: https://www.w3.org/TR/css-text-3/#white-space-processing
     //therefore we wrap it in a custom element, then process it via its innerText
@@ -62,9 +60,7 @@ module.exports = function htmlToDominatorString(html, opts) {
             str += makeIndent(lineDepth) + text + '\n';
         }
 
-        // node types: https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
-        if(nodeType == 3) {
-
+        const writeTextNode = (nodeDepth, element) => {
             //See note above, about white space collapsing
             const textContent = element.textContent;
 
@@ -79,17 +75,23 @@ module.exports = function htmlToDominatorString(html, opts) {
                 //get the innerText (since the custom element extends span, it'll be formatted properly)
                 const innerText = textElement.innerText;
                 //write it out
-                writeLine(nodeDepth, `.text("${innerText}"),`);
+                writeLine(nodeDepth, `.text("${innerText}")`);
             }
+        }
 
+        // node types: https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
+        if(nodeType == 3) {
+            writeTextNode(nodeDepth, element);
             if(children && children.length) {
                 throw new Error("text nodes with children? very confusing!!");
             }
+
         } else if(nodeType == 1) {
 
 
             writeLine(nodeDepth, `${parentTag}!("${tagName.toLowerCase()}", {`);
 
+            const attrMacroPairs = [];
             for(let i = 0; i < attributes.length; i++) {
                 const {name, value} = attributes[i];
                 if(name.toLowerCase() === "class") {
@@ -103,28 +105,71 @@ module.exports = function htmlToDominatorString(html, opts) {
                         }
                     }
                 } else {
-                    writeLine(nodeDepth + 1, `.${attributeMethod}("${name}", "${value}")`);
+                    if(attrKind === "reg" || attrKind === "prop") {
+                        const attributeMethod = attrKind === "reg" ? "attr" : "prop";
+                        writeLine(nodeDepth + 1, `.${attributeMethod}("${name}", "${value}")`);
+                    } else {
+                        attrMacroPairs.push({name, value});
+                    }
                 }
+            }
+            if(attrMacroPairs.length) {
+                let attrStr = attrMacroPairs.reduce((acc, curr, idx) => {
+                    if(idx) {
+                        acc += ", ";
+                    }
+                    const {name, value} = curr;
+                    acc += `${name}="${value}"`;
+                    return acc;
+                }, "");
+                writeLine(nodeDepth + 1, `.attrs!{${attrStr}}`);
             }
 
 
-            //for clarity - this is a separate if since the above check will ideally go away
-            if(children.length) {
-
-                writeLine(nodeDepth + 1, `.children(&mut [`);
-
-                for(let i = 0; i < children.length; i++) {
-                    str = addNodes(
-                        children[i], 
-                        {
-                            nodeDepth: nodeDepth + 2, 
-                            str, 
-                            withComma: true,
-                            parentTag,
-                        });
+            const textChildren = [];
+            const realChildren = [];
+            for(let i = 0; i < children.length; i++) {
+                const element = children[i];
+                if(element.nodeType == 3) {
+                    textChildren.push(element);
+                } else {
+                    realChildren.push(element);
                 }
+            }
 
-                writeLine(nodeDepth + 1, `])`);
+            textChildren.forEach(child => writeTextNode(nodeDepth + 1, child));
+
+            if(realChildren.length) {            
+                if(realChildren.length === 1) {
+                    writeLine(nodeDepth + 1, `.child(`);
+
+                    for(let i = 0; i < realChildren.length; i++) {
+                        str = addNodes(
+                            realChildren[i], 
+                            {
+                                nodeDepth: nodeDepth + 2, 
+                                str, 
+                                parentTag,
+                            });
+                    }
+
+                    writeLine(nodeDepth + 1, `)`);
+                } else {
+                    writeLine(nodeDepth + 1, `.children([`);
+
+                    for(let i = 0; i < realChildren.length; i++) {
+                        str = addNodes(
+                            realChildren[i], 
+                            {
+                                nodeDepth: nodeDepth + 2, 
+                                str, 
+                                withComma: true,
+                                parentTag,
+                            });
+                    }
+
+                    writeLine(nodeDepth + 1, `])`);
+                }
             }
 
             if(withComma) {
@@ -165,5 +210,6 @@ module.exports = function htmlToDominatorString(html, opts) {
 
         return [offScreenContainer.firstChild, hiddenContainer];
     }
+
 }
 
