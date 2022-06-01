@@ -74,8 +74,13 @@ main {
     padding: 10px;
     font-family: Verdana, Arial, Helvetica, sans-serif;
     display: flex;
+    justify-content: space-between;
 }
 
 .options > * {
     cursor: pointer;
+}
+
+.attr-options {
+    display: flex;
 }

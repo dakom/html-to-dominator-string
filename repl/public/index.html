@@ -11,12 +11,18 @@
     </head>
     <body>
         <div class="options">
-            <input type="radio" id="regular" name="attr_kind" value="reg">
-            <label for="regular">Regular</label><br>
-            <input type="radio" id="prop" name="attr_kind" value="prop">
-            <label for="prop">As Property</label><br>
-            <input type="radio" id="macro" name="attr_kind" value="macro">
-            <label for="macro">Macro</label><br>
+            <div class="attr-options">
+                Attributes: 
+                <input type="radio" id="macro" name="attr_kind" value="macro">
+                <label for="macro">Macro</label><br>
+                <input type="radio" id="regular" name="attr_kind" value="reg">
+                <label for="regular">Regular</label><br>
+                <input type="radio" id="prop" name="attr_kind" value="prop">
+                <label for="prop">As Property</label><br>
+            </div>
+            <div>
+                <button id="copy">Copy to clipboard</button>
+            </div>
         </div>
         <main>
             <section class="panels">

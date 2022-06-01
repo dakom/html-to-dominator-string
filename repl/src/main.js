@@ -28,6 +28,7 @@ onAttrKindChange(kind => {
     render();
 });
 
+
 const inputEditor = document.querySelector('#input');
 const inputJar = new CodeJar(
 	inputEditor, 
@@ -53,6 +54,10 @@ const outputJar = new CodeJar(
 
 outputEditor.style.resize = "none"
 
+document.querySelector("#copy").onclick = () => {
+    copyTextToClipboard(outputJar.toString());
+}
+
 render();
 
 function render() {
@@ -63,4 +68,39 @@ function render() {
 
 	const dominator_string = htmlToDominatorString(html, opts);
 	outputJar.updateCode(dominator_string);
+}
+
+// https://stackoverflow.com/a/30810322/784519
+function copyTextToClipboard(text) {
+    if (!navigator.clipboard) {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+
+        // Avoid scrolling to bottom
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            if(document.execCommand('copy')) {
+                console.log('copied to clipboard');
+            } else {
+                console.error('Fallback copy to clipboard failed');
+            }
+        } catch (err) {
+            console.error('Fallback copy to clipboard failed: ', err);
+        }
+
+        document.body.removeChild(textArea);
+    } else {
+        navigator.clipboard.writeText(text).then(function() {
+            console.log('copied to clipboard');
+        }, function(err) {
+            console.error('could not copy to clipboard: ', err);
+        });
+    }
 }
