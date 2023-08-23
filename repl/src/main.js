@@ -6,7 +6,7 @@ import {svgDefault, htmlDefault, fullDefault, textNodeDefault} from "./default";
 
 const DEBUG = true;
 
-const opts = {attrKind: "reg"};
+const opts = {attrKind: "multiline"};
 
 function setAttrKind(kind) {
     document.querySelector(`input[type='radio'][name=attr_kind][value=${kind}]`).checked = true;
