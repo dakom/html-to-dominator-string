@@ -86,6 +86,43 @@ module.exports = function htmlToDominatorString(html, opts) {
             }
         }
 
+        const writeMap = (map, attrOrProp) => {
+            const mapArr = Array.from(map.entries())
+            if(map.size === 1) {
+                const [name, value] = mapArr[0]
+                if(attrOrProp === "attr") {
+                    writeLine(nodeDepth + 1, `.attr("${name}", "${value}")`);
+                } else {
+                    writeLine(nodeDepth + 1, `.prop("${name}", ${value})`);
+                }
+            } else if(map.size) {
+                if(attrKind === "oneline") {
+                    let s = `.${attrOrProp}s!{`;
+                    mapArr.forEach((curr) => {
+                        const [name, value] = curr;
+                        if(attrOrProp === "attr") {
+                            s += ` "${name}": "${value}",`
+                        } else {
+                            s += ` "${name}": ${value},`
+                        }
+                    }, "");
+                    s += `}`
+                    writeLine(nodeDepth + 1, s)
+                } else {
+                    writeLine(nodeDepth + 1, `.${attrOrProp}s!{`)
+                    mapArr.forEach((curr) => {
+                        const [name, value] = curr;
+                        if(attrOrProp === "attr") {
+                            writeLine(nodeDepth + 2,`"${name}": "${value}",`)
+                        } else {
+                            writeLine(nodeDepth + 2,`"${name}": ${value},`)
+                        }
+                    }, "");
+                    writeLine(nodeDepth + 1, `}`)
+                }
+            }
+        }
+
         // node types: https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
         if(nodeType == 3) {
             // this won't really happen here, unless top-level element is text
@@ -95,7 +132,8 @@ module.exports = function htmlToDominatorString(html, opts) {
 
             writeLine(nodeDepth, `${parentTag}!("${tagName.toLowerCase()}", {`);
 
-            const attrMacroPairs = [];
+            const attrsToAdd = new Map();
+            const propsToAdd = new Map();
             for(let i = 0; i < attributes.length; i++) {
                 const {name, value} = attributes[i];
                 if(name.toLowerCase() === "class") {
@@ -109,26 +147,16 @@ module.exports = function htmlToDominatorString(html, opts) {
                         }
                     }
                 } else {
-                    if(attrKind === "reg" || attrKind === "prop") {
-                        const attributeMethod = attrKind === "reg" ? "attr" : "prop";
-                        writeLine(nodeDepth + 1, `.${attributeMethod}("${name}", "${value}")`);
+                    if(value === "") {
+                        propsToAdd.set(name, true);
                     } else {
-                        attrMacroPairs.push({name, value});
+                        attrsToAdd.set(name, value);
                     }
                 }
             }
-            if(attrMacroPairs.length) {
-                let attrStr = attrMacroPairs.reduce((acc, curr, idx) => {
-                    if(idx) {
-                        acc += ", ";
-                    }
-                    const {name, value} = curr;
-                    acc += `${name}="${value}"`;
-                    return acc;
-                }, "");
-                writeLine(nodeDepth + 1, `.attrs!{${attrStr}}`);
-            }
 
+            writeMap(attrsToAdd, "attr");
+            writeMap(propsToAdd, "prop");
 
             const textChildren = [];
             const realChildren = [];
