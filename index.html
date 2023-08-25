@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>HTML to Dominator REPL</title>
+        <meta name="description" content="HTML to Dominator REPL">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="styles.css" rel="stylesheet /">
+        <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
+        <link href="prism.css" rel="stylesheet /">
+    </head>
+    <body>
+        <div class="options">
+            <div class="attr-options">
+                Attributes: 
+                <input type="radio" id="macro" name="attr_kind" value="multiline">
+                <label for="macro">Multiline</label><br>
+                <input type="radio" id="regular" name="attr_kind" value="oneline">
+                <label for="regular">Oneline</label><br>
+            </div>
+            <div>
+                <button id="copy">Copy to clipboard</button>
+            </div>
+        </div>
+        <main>
+            <section class="panels">
+                <div id="input" class="editor language-html">
+
+                </div>
+                <div id="output" class="editor language-rust">
+
+                </div>
+            </section>
+        </main>  
+        <script src="dist/bundle.js" type="module"></script>
+    </body>
+</html>
