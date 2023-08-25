@@ -2,7 +2,7 @@ module.exports = function htmlToDominatorString(html, opts) {
 
     opts = opts || {};
 
-    const {attrKind} = opts;
+    const {attrKind, emptyAttrIsBooleanProp} = opts;
 
     //white space collapsing is complicated. See: https://www.w3.org/TR/css-text-3/#white-space-processing
     //therefore we wrap it in a custom element, then process it via its innerText
@@ -147,7 +147,7 @@ module.exports = function htmlToDominatorString(html, opts) {
                         }
                     }
                 } else {
-                    if(value === "") {
+                    if(value === "" && emptyAttrIsBooleanProp) {
                         propsToAdd.set(name, true);
                     } else {
                         attrsToAdd.set(name, value);
